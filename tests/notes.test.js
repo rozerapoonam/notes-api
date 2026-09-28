@@ -68,6 +68,53 @@ describe("Notes CRUD API", () => {
     expect(res.body.data[0].title).toBe("Buy milk");
   });
 
+  test("GET /api/notes/search?q= finds notes by title", async () => {
+    await request(app).post("/api/notes").send({ title: "Buy milk" });
+    await request(app).post("/api/notes").send({ title: "Walk the dog" });
+
+    const res = await request(app)
+      .get("/api/notes/search")
+      .query({ q: "MILK" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.count).toBe(1);
+    expect(res.body.data[0].title).toBe("Buy milk");
+  });
+
+  test("GET /api/notes/search?q= finds notes by content", async () => {
+    await request(app)
+      .post("/api/notes")
+      .send({ title: "Groceries", content: "Pick up oat milk" });
+    await request(app).post("/api/notes").send({ title: "Walk the dog" });
+
+    const res = await request(app)
+      .get("/api/notes/search")
+      .query({ q: "oat milk" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.count).toBe(1);
+    expect(res.body.data[0].title).toBe("Groceries");
+  });
+
+  test("GET /api/notes/search?q= returns an empty list when nothing matches", async () => {
+    await request(app).post("/api/notes").send({ title: "Buy milk" });
+
+    const res = await request(app)
+      .get("/api/notes/search")
+      .query({ q: "nonexistent" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.count).toBe(0);
+    expect(res.body.data).toEqual([]);
+  });
+
+  test("GET /api/notes/search rejects a missing q param", async () => {
+    const res = await request(app).get("/api/notes/search");
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/required/i);
+  });
+
   test("PUT /api/notes/:id updates a note", async () => {
     const created = await request(app)
       .post("/api/notes")

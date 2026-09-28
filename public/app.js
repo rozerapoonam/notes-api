@@ -11,6 +11,7 @@ const emptyState = document.getElementById("empty");
 const status = document.getElementById("status");
 
 let editingId = null;
+let searchDebounceTimer = null;
 
 function setStatus(message) {
   status.textContent = message;
@@ -58,9 +59,12 @@ function startEdit(note) {
   titleInput.focus();
 }
 
-function renderNotes(notes) {
+function renderNotes(notes, searchTerm) {
   notesList.innerHTML = "";
   emptyState.hidden = notes.length > 0;
+  emptyState.textContent = searchTerm
+    ? `No notes match "${searchTerm}".`
+    : "No notes yet.";
 
   notes.forEach((note) => {
     const item = document.createElement("li");
@@ -97,11 +101,14 @@ function renderNotes(notes) {
 }
 
 async function loadNotes() {
-  const title = searchInput.value.trim();
-  const query = title ? `?title=${encodeURIComponent(title)}` : "";
-  const result = await request(`/api/notes${query}`);
-  renderNotes(result.data);
-  setStatus(`${result.count} note${result.count === 1 ? "" : "s"}`);
+  const term = searchInput.value.trim();
+  const path = term
+    ? `/api/notes/search?q=${encodeURIComponent(term)}`
+    : "/api/notes";
+  const result = await request(path);
+  renderNotes(result.data, term);
+  const label = term ? `${result.count} result${result.count === 1 ? "" : "s"}` : `${result.count} note${result.count === 1 ? "" : "s"}`;
+  setStatus(label);
 }
 
 async function removeNote(id) {
@@ -142,7 +149,10 @@ form.addEventListener("submit", async (event) => {
 
 cancelButton.addEventListener("click", resetForm);
 searchInput.addEventListener("input", () => {
-  loadNotes().catch((error) => setStatus(error.message));
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    loadNotes().catch((error) => setStatus(error.message));
+  }, 300);
 });
 
 loadNotes().catch((error) => setStatus(error.message));
