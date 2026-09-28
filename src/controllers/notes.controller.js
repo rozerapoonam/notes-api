@@ -3,6 +3,7 @@ const {
   validateCreateNote,
   validateUpdateNote,
   validateId,
+  validateSearchQuery,
 } = require("../utils/validators");
 
 function listNotes(req, res, next) {
@@ -10,6 +11,16 @@ function listNotes(req, res, next) {
     const { title } = req.query;
     const notes = notesService.getAllNotes({ title });
     res.status(200).json({ data: notes, count: notes.length });
+  } catch (err) {
+    next(err);
+  }
+}
+
+function searchNotes(req, res, next) {
+  try {
+    const query = validateSearchQuery(req.query.q);
+    const notes = notesService.searchNotes(query);
+    res.status(200).json({ data: notes, count: notes.length, query });
   } catch (err) {
     next(err);
   }
@@ -56,4 +67,11 @@ function deleteNote(req, res, next) {
   }
 }
 
-module.exports = { listNotes, getNote, createNote, updateNote, deleteNote };
+module.exports = {
+  listNotes,
+  searchNotes,
+  getNote,
+  createNote,
+  updateNote,
+  deleteNote,
+};

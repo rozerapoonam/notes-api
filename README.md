@@ -46,7 +46,8 @@ Base path: `/api/notes`
 | Method | Endpoint            | Description                                    |
 | ------ | -------------------- | ----------------------------------------------- |
 | GET    | `/api/notes`          | Get all notes                                   |
-| GET    | `/api/notes?title=x`  | Search notes by title (partial, case-insensitive) |
+| GET    | `/api/notes?title=x`  | Filter notes by title (partial, case-insensitive) |
+| GET    | `/api/notes/search?q=x` | Search notes by title or content (partial, case-insensitive) |
 | GET    | `/api/notes/:id`      | Get a note by ID                                |
 | POST   | `/api/notes`          | Create a note                                   |
 | PUT    | `/api/notes/:id`      | Update a note                                   |
@@ -72,11 +73,20 @@ curl -X POST http://localhost:3000/api/notes \
   -d '{"title": "Buy milk", "content": "2% milk from the store"}'
 ```
 
+### Search a note
+
+```bash
+curl "http://localhost:3000/api/notes/search?q=milk"
+```
+
+Matches are case-insensitive and checked against both `title` and `content`.
+
 ### Validation rules
 
 - `title` is required, must be a non-empty string, max 200 characters.
 - `content` is optional, must be a string if provided, max 5000 characters.
 - Update requests must include at least one of `title` or `content`.
+- Search requires a non-empty `q` query param, max 200 characters.
 
 ### Error format
 

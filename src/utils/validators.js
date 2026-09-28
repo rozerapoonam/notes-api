@@ -75,4 +75,27 @@ function validateId(id) {
   }
 }
 
-module.exports = { validateCreateNote, validateUpdateNote, validateId };
+const MAX_QUERY_LENGTH = 200;
+
+function validateSearchQuery(q) {
+  if (q === undefined || q === null || String(q).trim() === "") {
+    throw new ValidationError("Query param 'q' is required");
+  }
+  if (typeof q !== "string") {
+    throw new ValidationError("Query param 'q' must be a string");
+  }
+  const trimmed = q.trim();
+  if (trimmed.length > MAX_QUERY_LENGTH) {
+    throw new ValidationError(
+      `Query param 'q' must be at most ${MAX_QUERY_LENGTH} characters`
+    );
+  }
+  return trimmed;
+}
+
+module.exports = {
+  validateCreateNote,
+  validateUpdateNote,
+  validateId,
+  validateSearchQuery,
+};

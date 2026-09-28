@@ -12,6 +12,15 @@ function getAllNotes({ title } = {}) {
   return [...notes];
 }
 
+function searchNotes(term) {
+  const needle = term.toLowerCase();
+  return notes.filter(
+    (note) =>
+      note.title.toLowerCase().includes(needle) ||
+      note.content.toLowerCase().includes(needle)
+  );
+}
+
 function getNoteById(id) {
   const note = notes.find((n) => n.id === id);
   if (!note) {
@@ -48,6 +57,7 @@ function _resetNotes() {
 
 module.exports = {
   getAllNotes,
+  searchNotes,
   getNoteById,
   createNote,
   updateNote,
